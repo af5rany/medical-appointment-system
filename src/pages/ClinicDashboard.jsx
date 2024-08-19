@@ -7,7 +7,7 @@ import {
 } from "../API/clinicApi";
 import AppointmentDetailsModal from "../components/AppointmentDetailsModal";
 import AppointmentCard from "../components/AppointmentCard";
-import LogOut from "../components/LogOut"; // Import LogOut component
+import LogOut from "../components/LogOut";
 import { useAuth } from "../contexts/AuthContext";
 
 function ClinicDashboard() {
@@ -90,7 +90,7 @@ function ClinicDashboard() {
     <div className="min-h-screen bg-gray-50 p-8 relative">
       <header className="mb-8 flex justify-between items-center">
         <h1 className="text-4xl font-bold text-gray-800">Clinic Dashboard</h1>
-        <LogOut /> {/* Use LogOut component here */}
+        <LogOut />
       </header>
 
       {error && (

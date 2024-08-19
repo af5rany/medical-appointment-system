@@ -21,7 +21,6 @@ function Login() {
         sameSite: "strict",
       });
 
-      // Check if the user exists in Airtable
       const userInfo = await fetchUserFromAirtable(user.uid);
 
       if (userInfo.exists) {

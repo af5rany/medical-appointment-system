@@ -10,7 +10,6 @@ import Login from "./pages/Login";
 import RoleSelection from "./pages/RoleSelection";
 import PatientDashboard from "./pages/PatientDashboard";
 import ClinicDashboard from "./pages/ClinicDashboard";
-// import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
   const { user } = useAuth();

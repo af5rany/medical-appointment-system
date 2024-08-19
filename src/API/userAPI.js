@@ -45,7 +45,7 @@ export const fetchUserFromAirtable = async (uid) => {
       .table("Users")
       .select({
         filterByFormula: `{UserId} = "${uid}"`,
-        maxRecords: 1, // Since you're fetching a single user, you can limit the records to 1
+        maxRecords: 1,
       })
       .firstPage();
 
@@ -91,7 +91,6 @@ export const updateRoleInAirtable = async (uid, role) => {
         Role: [role],
       });
     } else {
-      // If for some reason the user does not exist, throw an error
       throw new Error("User not found in Airtable.");
     }
   } catch (error) {

@@ -10,8 +10,8 @@ function LogOut() {
   async function handleLogout() {
     try {
       await signOut(auth);
-      Cookies.remove("authToken"); // Remove the auth token cookie
-      setUser(null); // Clear user state
+      Cookies.remove("authToken");
+      setUser(null);
       setClinicId(null);
       console.log("Successfully signed out");
     } catch (error) {

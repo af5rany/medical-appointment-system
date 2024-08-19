@@ -33,7 +33,6 @@ function FullCalendarComponent({ clinicId }) {
           clinicId
         );
 
-        // Mark available appointments that are overlapped by approved appointments as unavailable
         const updatedAvailableAppointments = availableAppointments.filter(
           (available) =>
             !approvedAppointments.some(
@@ -56,7 +55,7 @@ function FullCalendarComponent({ clinicId }) {
 
   useEffect(() => {
     loadAppointments();
-  }, [clinicId]); // Reload appointments when clinicId changes
+  }, [clinicId]);
 
   const handleDateClick = (info) => {
     const selectedDate = new Date(info.date);

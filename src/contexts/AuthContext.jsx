@@ -40,12 +40,12 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
           console.error("Error fetching user data from Airtable:", error);
           setUser(null);
-          Cookies.remove("authToken"); // Clear cookie on error
+          Cookies.remove("authToken");
         }
       } else {
         setUser(null);
         setClinicId(null);
-        Cookies.remove("authToken"); // Ensure cookie is removed when user is null
+        Cookies.remove("authToken");
       }
       setLoading(false);
     });
