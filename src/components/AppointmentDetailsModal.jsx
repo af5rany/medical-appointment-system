@@ -1,9 +1,7 @@
-// AppointmentDetailsModal.js
-
 import React from "react";
 import Modal from "react-modal";
 
-Modal.setAppElement("#root"); // Required for accessibility
+Modal.setAppElement("#root");
 
 function AppointmentDetailsModal({ isOpen, onRequestClose, appointment }) {
   return (
@@ -22,15 +20,12 @@ function AppointmentDetailsModal({ isOpen, onRequestClose, appointment }) {
             <strong className="text-gray-700">Date:</strong> {appointment.Date}
           </p>
           <p className="mb-2">
-            <strong className="text-gray-700">Time:</strong> {appointment.Time}
+            <strong className="text-gray-700">Time:</strong>{" "}
+            {appointment.StartTime} - {appointment.StartTime}
           </p>
           <p className="mb-2">
             <strong className="text-gray-700">Patient Name:</strong>{" "}
-            {appointment.PatientName}
-          </p>
-          <p className="mb-2">
-            <strong className="text-gray-700">Reason:</strong>{" "}
-            {appointment.Reason}
+            {appointment.patientInfo?.Name}
           </p>
           <button
             onClick={onRequestClose}

@@ -1,7 +1,7 @@
 import React from "react";
 import LogOut from "../components/LogOut";
 import AppointmentHistory from "../components/AppointmentHistory";
-import FullCalendarComponent from "../components/FullCalendarComponent"; // Import the FullCalendar component
+import FullCalendarComponent from "../components/FullCalendarComponent";
 
 function PatientDashboard() {
   return (
@@ -9,10 +9,9 @@ function PatientDashboard() {
       <LogOut />
       <h1 className="text-3xl font-bold mb-6">Book an Appointment</h1>
 
-      {/* Use the FullCalendar component here */}
       <FullCalendarComponent />
 
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md mt-8">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-7xl mt-8">
         <AppointmentHistory />
       </div>
     </div>

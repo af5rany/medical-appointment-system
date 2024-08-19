@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import {
-  fetchAppointments,
+  fetchApprovedAppointments,
   fetchAppointmentRequests,
   approveAppointmentRequest,
   declineAppointmentRequest,
 } from "../API/clinicApi";
 import AppointmentDetailsModal from "../components/AppointmentDetailsModal";
+import AppointmentCard from "../components/AppointmentCard";
 
 function ClinicDashboard() {
   const [appointments, setAppointments] = useState([]);
@@ -13,19 +14,21 @@ function ClinicDashboard() {
   const [error, setError] = useState(null);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const clinicId = "recJjA7419NJAa5j9"; // Example Clinic ID, you might want to fetch this dynamically
+  const clinicId = "recJjA7419NJAa5j9";
+
+  // useEffect(() => {
+  //   console.log("fdsfsdfsfdfs", appointments);
+  // }, [appointments]);
 
   useEffect(() => {
-    console.log("appointments", appointments);
-  }, [appointments]);
-
-  useEffect(() => {
-    const loadAppointments = async () => {
+    const loadApprovedAppointments = async () => {
       try {
-        const appointmentsData = await fetchAppointments(clinicId);
+        const appointmentsData = await fetchApprovedAppointments(clinicId);
         setAppointments(appointmentsData);
       } catch (error) {
-        setError("Failed to fetch appointments. Please try again later.");
+        setError(
+          "Failed to fetch approved appointments. Please try again later."
+        );
       }
     };
 
@@ -40,23 +43,35 @@ function ClinicDashboard() {
       }
     };
 
-    loadAppointments();
+    loadApprovedAppointments();
     loadRequests();
   }, [clinicId]);
 
-  const handleApprove = async (recordId) => {
+  const handleApprove = async (appointmentId) => {
     try {
-      await approveAppointmentRequest(recordId);
-      setRequests(requests.filter((request) => request.id !== recordId));
+      await approveAppointmentRequest(appointmentId);
+      setRequests(
+        requests.filter((request) => request.AppointmentId !== appointmentId)
+      );
+
+      setAppointments([
+        ...appointments,
+        {
+          ...appointments.find((app) => app.AppointmentId === appointmentId),
+          Status: "Approved",
+        },
+      ]);
     } catch (error) {
       setError("Failed to approve the request. Please try again later.");
     }
   };
 
-  const handleDecline = async (recordId) => {
+  const handleDecline = async (appointmentId) => {
     try {
-      await declineAppointmentRequest(recordId);
-      setRequests(requests.filter((request) => request.id !== recordId));
+      await declineAppointmentRequest(appointmentId);
+      setRequests(
+        requests.filter((request) => request.AppointmentId !== appointmentId)
+      );
     } catch (error) {
       setError("Failed to decline the request. Please try again later.");
     }
@@ -86,7 +101,6 @@ function ClinicDashboard() {
         </div>
       )}
 
-      {/* Appointments Section */}
       <section className="mb-12">
         <h2 className="text-2xl font-semibold text-gray-700 mb-4">
           Your Appointments
@@ -96,24 +110,17 @@ function ClinicDashboard() {
             <ul>
               {appointments.map((appointment, index) => (
                 <li
-                  key={index}
+                  key={`${appointment.AppointmentId}-${index}`}
                   className="border-b border-gray-200 py-4 flex justify-between items-center"
                 >
-                  <div>
-                    <span className="text-lg font-medium text-gray-600">
-                      {new Date(appointment.Date).toLocaleDateString()} -{" "}
-                      {appointment.StartTime}
-                    </span>
-                    <span className="text-sm text-gray-500 block">
-                      {appointment.PatientName}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => openModal(appointment)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded transition"
-                  >
-                    View Details
-                  </button>
+                  <AppointmentCard
+                    date={new Date(appointment.Date).toLocaleDateString()}
+                    time={`${appointment.StartTime} - ${appointment.EndTime}`}
+                    patientName={
+                      appointment.patientInfo?.Name || "Unknown Patient"
+                    }
+                    onViewDetails={() => openModal(appointment)}
+                  />
                 </li>
               ))}
             </ul>
@@ -123,14 +130,12 @@ function ClinicDashboard() {
         </div>
       </section>
 
-      {/* Appointment Details Modal */}
       <AppointmentDetailsModal
         isOpen={modalIsOpen}
         onRequestClose={closeModal}
         appointment={selectedAppointment}
       />
 
-      {/* Appointment Requests Section */}
       <section>
         <h2 className="text-2xl font-semibold text-gray-700 mb-4">
           Appointment Requests
@@ -138,33 +143,18 @@ function ClinicDashboard() {
         <div className="bg-white shadow-lg rounded-lg p-6">
           {requests.length > 0 ? (
             <ul>
-              {requests.map((request, index) => (
+              {requests.map((request) => (
                 <li
-                  key={index}
+                  key={request.AppointmentId}
                   className="border-b border-gray-200 py-4 flex justify-between items-center"
                 >
-                  <div>
-                    <span className="text-lg font-medium text-gray-600">
-                      {request.RequestedStartTime} - {request.RequestedEndTime}
-                    </span>
-                    <span className="text-sm text-gray-500 block">
-                      {request.PatientName}
-                    </span>
-                  </div>
-                  <div>
-                    <button
-                      className="bg-green-500 hover:bg-green-600 text-white font-medium px-4 py-2 rounded mr-2 transition"
-                      onClick={() => handleApprove(request.RequestId)}
-                    >
-                      Approve
-                    </button>
-                    <button
-                      className="bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-2 rounded transition"
-                      onClick={() => handleDecline(request.RequestId)}
-                    >
-                      Decline
-                    </button>
-                  </div>
+                  <AppointmentCard
+                    date={new Date(request.Date).toLocaleDateString()}
+                    time={`${request.StartTime} - ${request.EndTime}`}
+                    patientName={request.patientInfo?.Name || "Unknown Patient"}
+                    onApprove={() => handleApprove(request.AppointmentId)}
+                    onDecline={() => handleDecline(request.AppointmentId)}
+                  />
                 </li>
               ))}
             </ul>

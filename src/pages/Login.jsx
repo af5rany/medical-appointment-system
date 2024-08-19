@@ -9,11 +9,10 @@ import Cookies from "js-cookie";
 function Login() {
   const { user, setUser } = useAuth();
   const [role, setRole] = useState("patient");
-  const navigate = useNavigate(); // Use the navigate hook
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
-      // If user is already authenticated, redirect to the appropriate dashboard
       navigate(user.role === "clinic" ? "/clinic" : "/patient");
     }
   }, [user, navigate]);
@@ -32,7 +31,6 @@ function Login() {
         sameSite: "strict",
       });
 
-      // Save user data with role and token
       const userData = {
         uid: user.uid,
         name: user.displayName,
@@ -42,12 +40,10 @@ function Login() {
         createdAt: new Date(),
       };
 
-      // Save the user data in Firestore
       await setDoc(doc(db, "users", user.uid), userData);
 
       setUser(userData);
 
-      // Navigate to the appropriate dashboard
       navigate(role === "clinic" ? "/clinic" : "/patient");
     } catch (error) {
       console.error("Error signing in with Google:", error);

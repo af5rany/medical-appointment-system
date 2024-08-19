@@ -15,7 +15,7 @@ function AppointmentRequests({ clinicId }) {
   const fetchRequests = () => {
     base("AppointmentRequests")
       .select({
-        filterByFormula: `{clinicId} = '${clinicId}' AND {status} = 'pending'`,
+        filterByFormula: `{clinicId} = '${clinicId}' AND {status} = 'Requested'`,
         sort: [{ field: "requestedDate", direction: "asc" }],
       })
       .eachPage((records, fetchNextPage) => {
@@ -58,7 +58,7 @@ function AppointmentRequests({ clinicId }) {
               {request.requestedEndTime}
             </div>
             <div>
-              <strong>Patient:</strong> {request.patientName}
+              <strong>Patient:</strong> {request.patientInfo?.Name}
             </div>
             <button onClick={() => handleApproval(request.id, "approved")}>
               Approve

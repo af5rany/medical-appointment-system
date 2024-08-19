@@ -3,46 +3,79 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { fetchAvailableAppointments, bookAppointment } from "../API/patientApi";
+import {
+  fetchAvailableAppointments,
+  fetchApprovedAppointments,
+  bookAppointment,
+  fetchRequestedAppointments,
+} from "../API/patientApi";
 import Modal from "react-modal";
 
-Modal.setAppElement("#root"); // For accessibility
+Modal.setAppElement("#root");
 
 function FullCalendarComponent() {
-  const [availableAppointments, setAvailableAppointments] = useState([]);
+  const [appointments, setAppointments] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const appointmentDuration = 30; // Appointment duration in minutes
-  const clinicId = "clinicId"; // Replace with dynamic clinic ID
-  const patientId = "patientId"; // Replace with dynamic patient ID
+  const appointmentDuration = 30;
+  const clinicId = "recJjA7419NJAa5j9";
+  const patientId = "recGys7slH9ZmHaSp";
+
+  // useEffect(() => {
+  //   console.log("appointments", appointments);
+  // }, [appointments]);
+
+  const loadAppointments = async () => {
+    try {
+      const availableAppointments = await fetchAvailableAppointments(clinicId);
+      const approvedAppointments = await fetchApprovedAppointments(clinicId);
+      const requestedAppointments = await fetchRequestedAppointments(clinicId);
+      setAppointments([
+        ...availableAppointments,
+        ...approvedAppointments,
+        ...requestedAppointments,
+      ]);
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+    }
+  };
 
   useEffect(() => {
-    const loadAvailableAppointments = async () => {
-      try {
-        const appointmentsData = await fetchAvailableAppointments(clinicId);
-        setAvailableAppointments(appointmentsData);
-      } catch (error) {
-        console.error("Error fetching available appointments:", error);
-      }
-    };
-
-    loadAvailableAppointments();
+    loadAppointments();
   }, [clinicId]);
 
   const handleDateClick = (info) => {
-    setSelectedSlot(info.date); // Store the clicked date
-    setIsModalOpen(true); // Open modal on date click
+    const selectedDate = new Date(info.date);
+    const day = selectedDate.getDay();
+    const hours = selectedDate.getHours();
+
+    const isWeekday = day >= 1 && day <= 5;
+
+    const isWithinWorkingHours = hours >= 9 && hours < 16;
+
+    if (isWeekday && isWithinWorkingHours) {
+      setSelectedSlot(info.date);
+      setIsModalOpen(true);
+    } else {
+      alert(
+        "Please select a time within working hours (9 AM to 4 PM) on weekdays."
+      );
+    }
   };
 
   const confirmBooking = async () => {
     try {
-      await bookAppointment({
+      const newAppointment = await bookAppointment({
         clinicId: clinicId,
         patientId: patientId,
-        startTime: selectedSlot, // Using the Date object directly
-        endTime: new Date(selectedSlot.getTime() + appointmentDuration * 60000), // Flexible duration
+        startTime: selectedSlot,
+        endTime: new Date(selectedSlot.getTime() + appointmentDuration * 60000),
       });
-      alert("Appointment booked successfully!");
+      setAppointments((prevAppointments) => [
+        ...prevAppointments,
+        newAppointment,
+      ]);
+      // alert("Appointment booked successfully!");
     } catch (error) {
       console.error("Error booking appointment:", error);
       alert("Failed to book the appointment. Please try again.");
@@ -67,20 +100,46 @@ function FullCalendarComponent() {
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           initialView="timeGridWeek"
           selectable={true}
+          allDaySlot={false}
           headerToolbar={{
             left: "prev,next today",
             center: "title",
             right: "dayGridMonth,timeGridWeek,timeGridDay",
           }}
-          events={availableAppointments.map((appointment) => ({
-            title: "Available",
-            start: appointment.StartTime,
-            end: appointment.EndTime,
-            backgroundColor: "#28a745",
-            borderColor: "#28a745",
+          events={appointments.map((appointment) => ({
+            title: appointment.Status === "Approved" ? "Approved" : "Pending",
+            start: appointment.StartTimeDate,
+            end: appointment.EndTimeDate,
+            backgroundColor:
+              appointment.Status === "Approved"
+                ? "#007bff"
+                : appointment.Status === "Requested"
+                ? "#ff6347"
+                : "#28a745",
+            borderColor:
+              appointment.Status === "Approved"
+                ? "#007bff"
+                : appointment.Status === "Requested"
+                ? "#ff6347"
+                : "#28a745",
             textColor: "#fff",
           }))}
           dateClick={handleDateClick}
+          businessHours={{
+            daysOfWeek: [1, 2, 3, 4, 5],
+            startTime: "09:00",
+            endTime: "16:00",
+          }}
+          views={{
+            timeGridWeek: {
+              minTime: "09:00:00",
+              maxTime: "16:00:00",
+            },
+            timeGridDay: {
+              minTime: "09:00:00",
+              maxTime: "16:00:00",
+            },
+          }}
           height="auto"
           eventBackgroundColor="#f5f5f5"
           eventBorderColor="#ccc"
