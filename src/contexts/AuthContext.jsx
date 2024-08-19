@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { auth } from "../firebaseConfig";
 import { onAuthStateChanged, getIdTokenResult } from "firebase/auth";
-import { fetchUserFromAirtable } from "../API/userAPI";
+import { fetchUserFromAirtable, saveUserToAirtable } from "../API/userAPI";
 
 const AuthContext = createContext();
 
@@ -19,7 +19,13 @@ export const AuthProvider = ({ children }) => {
       if (firebaseUser) {
         try {
           const tokenResult = await getIdTokenResult(firebaseUser);
-          const airtableUser = await fetchUserFromAirtable(firebaseUser.uid);
+          let airtableUser = await fetchUserFromAirtable(firebaseUser.uid);
+
+          if (!airtableUser.exists) {
+            // If the user doesn't exist in Airtable, create a new record
+            await saveUserToAirtable(firebaseUser);
+            airtableUser = await fetchUserFromAirtable(firebaseUser.uid);
+          }
 
           if (airtableUser.exists) {
             setUser({

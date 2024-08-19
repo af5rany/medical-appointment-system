@@ -127,7 +127,6 @@ export const bookAppointment = async ({
   startTime,
   endTime,
 }) => {
-  console.log("reached rhehe");
   try {
     const startTimeFormatted = startTime.toISOString().substr(11, 5);
     const endTimeFormatted = endTime.toISOString().substr(11, 5);

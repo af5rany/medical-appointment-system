@@ -4,7 +4,6 @@ import { auth, provider } from "../firebaseConfig";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
-import { saveUserToAirtable, fetchUserFromAirtable } from "../API/userAPI";
 
 function Login() {
   const { setUser } = useAuth();
@@ -14,6 +13,7 @@ function Login() {
     try {
       const { user } = await signInWithPopup(auth, provider);
 
+      // The token is set in the cookie, so the AuthProvider can handle the rest
       const token = await user.getIdToken();
       Cookies.set("authToken", token, {
         expires: 7,
@@ -21,21 +21,7 @@ function Login() {
         sameSite: "strict",
       });
 
-      const userInfo = await fetchUserFromAirtable(user.uid);
-
-      if (userInfo.exists) {
-        // User exists, update context and navigate
-        setUser({
-          ...userInfo,
-          uid: user.uid,
-          role: userInfo.role,
-        });
-        navigate(userInfo.role === "Clinic" ? "/clinic" : "/patient");
-      } else {
-        // User does not exist, save the new user to Airtable
-        await saveUserToAirtable(user);
-        navigate("/role-selection");
-      }
+      // The onAuthStateChanged listener in the AuthProvider will handle the rest
     } catch (error) {
       console.error("Error signing in with Google:", error);
     }
