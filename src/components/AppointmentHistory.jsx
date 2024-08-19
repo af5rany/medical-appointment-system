@@ -6,7 +6,7 @@ import AppointmentDetailsModal from "../components/AppointmentDetailsModal";
 
 function AppointmentHistory() {
   const { user } = useAuth();
-  const patientId = "recGys7slH9ZmHaSp";
+  const patientId = user.uid;
 
   const [appointments, setAppointments] = useState([]);
   const [selectedAppointment, setSelectedAppointment] = useState(null);

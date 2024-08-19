@@ -10,39 +10,53 @@ import {
   fetchRequestedAppointments,
 } from "../API/patientApi";
 import Modal from "react-modal";
+import { useAuth } from "../contexts/AuthContext";
 
 Modal.setAppElement("#root");
 
-function FullCalendarComponent() {
+function FullCalendarComponent({ clinicId }) {
+  const { user } = useAuth();
   const [appointments, setAppointments] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const appointmentDuration = 30;
-  const clinicId = "recJjA7419NJAa5j9";
-  const patientId = "recGys7slH9ZmHaSp";
-
-  // useEffect(() => {
-  //   console.log("appointments", appointments);
-  // }, [appointments]);
+  const appointmentDuration = 30; // in minutes
+  const patientId = user.userId;
 
   const loadAppointments = async () => {
-    try {
-      const availableAppointments = await fetchAvailableAppointments(clinicId);
-      const approvedAppointments = await fetchApprovedAppointments(clinicId);
-      const requestedAppointments = await fetchRequestedAppointments(clinicId);
-      setAppointments([
-        ...availableAppointments,
-        ...approvedAppointments,
-        ...requestedAppointments,
-      ]);
-    } catch (error) {
-      console.error("Error fetching appointments:", error);
+    if (clinicId) {
+      try {
+        const availableAppointments = await fetchAvailableAppointments(
+          clinicId
+        );
+        const approvedAppointments = await fetchApprovedAppointments(clinicId);
+        const requestedAppointments = await fetchRequestedAppointments(
+          clinicId
+        );
+
+        // Mark available appointments that are overlapped by approved appointments as unavailable
+        const updatedAvailableAppointments = availableAppointments.filter(
+          (available) =>
+            !approvedAppointments.some(
+              (approved) =>
+                new Date(available.StartTimeDate).getTime() ===
+                new Date(approved.StartTimeDate).getTime()
+            )
+        );
+
+        setAppointments([
+          ...updatedAvailableAppointments,
+          ...approvedAppointments,
+          ...requestedAppointments,
+        ]);
+      } catch (error) {
+        console.error("Error fetching appointments:", error);
+      }
     }
   };
 
   useEffect(() => {
     loadAppointments();
-  }, [clinicId]);
+  }, [clinicId]); // Reload appointments when clinicId changes
 
   const handleDateClick = (info) => {
     const selectedDate = new Date(info.date);
@@ -50,7 +64,6 @@ function FullCalendarComponent() {
     const hours = selectedDate.getHours();
 
     const isWeekday = day >= 1 && day <= 5;
-
     const isWithinWorkingHours = hours >= 9 && hours < 16;
 
     if (isWeekday && isWithinWorkingHours) {
@@ -75,7 +88,7 @@ function FullCalendarComponent() {
         ...prevAppointments,
         newAppointment,
       ]);
-      // alert("Appointment booked successfully!");
+      alert("Appointment booked successfully!");
     } catch (error) {
       console.error("Error booking appointment:", error);
       alert("Failed to book the appointment. Please try again.");
@@ -107,21 +120,15 @@ function FullCalendarComponent() {
             right: "dayGridMonth,timeGridWeek,timeGridDay",
           }}
           events={appointments.map((appointment) => ({
-            title: appointment.Status === "Approved" ? "Approved" : "Pending",
+            title: appointment.Status === "Approved" ? "Approved" : "Available",
             start: appointment.StartTimeDate,
             end: appointment.EndTimeDate,
             backgroundColor:
               appointment.Status === "Approved"
-                ? "#007bff"
-                : appointment.Status === "Requested"
-                ? "#ff6347"
-                : "#28a745",
+                ? "#ff6347" // Red color for approved appointments (not available)
+                : "#28a745", // Green color for available appointments
             borderColor:
-              appointment.Status === "Approved"
-                ? "#007bff"
-                : appointment.Status === "Requested"
-                ? "#ff6347"
-                : "#28a745",
+              appointment.Status === "Approved" ? "#ff6347" : "#28a745",
             textColor: "#fff",
           }))}
           dateClick={handleDateClick}
@@ -129,16 +136,6 @@ function FullCalendarComponent() {
             daysOfWeek: [1, 2, 3, 4, 5],
             startTime: "09:00",
             endTime: "16:00",
-          }}
-          views={{
-            timeGridWeek: {
-              minTime: "09:00:00",
-              maxTime: "16:00:00",
-            },
-            timeGridDay: {
-              minTime: "09:00:00",
-              maxTime: "16:00:00",
-            },
           }}
           height="auto"
           eventBackgroundColor="#f5f5f5"

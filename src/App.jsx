@@ -6,79 +6,82 @@ import {
   Navigate,
 } from "react-router-dom";
 import { useAuth } from "./contexts/AuthContext";
-import Home from "./pages/Home";
+import Login from "./pages/Login";
+import RoleSelection from "./pages/RoleSelection";
 import PatientDashboard from "./pages/PatientDashboard";
 import ClinicDashboard from "./pages/ClinicDashboard";
-import Login from "./pages/Login";
-
-// function ProtectedRoute({ element: Component, allowedRoles, ...rest }) {
-//   const { user } = useAuth();
-
-//   if (!user) {
-//     return <Navigate to="/login" />;
-//   }
-
-//   if (allowedRoles && !allowedRoles.includes(user.role)) {
-//     return <Navigate to={user.role === "clinic" ? "/clinic" : "/patient"} />;
-//   }
-
-//   return <Component {...rest} />;
-// }
-
-// function DefaultRoute() {
-//   const { user } = useAuth();
-
-//   if (!user) {
-//     return <Navigate to="/login" />;
-//   }
-
-//   return <Navigate to={user.role === "clinic" ? "/clinic" : "/patientd"} />;
-// }
+// import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
   const { user } = useAuth();
-
+  console.log("user", user);
   return (
-    <div>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-        </Routes>
-      </Router>
+    <Router>
+      <Routes>
+        <Route
+          path="/login"
+          element={!user ? <Login /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/role-selection"
+          element={user ? <RoleSelection /> : <Navigate to="/login" />}
+        />
 
-      <ClinicDashboard />
-      <PatientDashboard />
-    </div>
-    // <Router>
-    // <Routes>
-    //     {/* <Route path="/" element={<DefaultRoute />} /> */}
+        <Route
+          path="/patient"
+          element={
+            user && user.role === "Patient" ? (
+              <PatientDashboard />
+            ) : (
+              <Navigate
+                to={
+                  user
+                    ? user.role === "Patient"
+                      ? "/patient"
+                      : "/clinic"
+                    : "/login"
+                }
+              />
+            )
+          }
+        />
 
-    //     <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
+        {/* Clinic routes */}
+        <Route
+          path="/clinic"
+          element={
+            user && user.role === "Clinic" ? (
+              <ClinicDashboard />
+            ) : (
+              <Navigate
+                to={
+                  user
+                    ? user.role === "Clinic"
+                      ? "/clinic"
+                      : "/patient"
+                    : "/login"
+                }
+              />
+            )
+          }
+        />
 
-    //     <Route
-    //       path="/patient"
-    //       element={
-    //         <ProtectedRoute
-    //           element={PatientDashboard}
-    //           allowedRoles={["patient"]}
-    //         />
-    //       }
-    //     />
-    //     <Route
-    //       path="/clinic"
-    //       element={
-    //         <ProtectedRoute
-    //           element={ClinicDashboard}
-    //           allowedRoles={["clinic"]}
-    //         />
-    //       }
-    //     />
+        {/* Default route based on user role */}
+        <Route
+          path="/"
+          element={
+            user ? (
+              <Navigate to={user.role === "Clinic" ? "/clinic" : "/patient"} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
 
-    //     {/* <Route path="/aboutus" element={<AboutUs />} /> */}
-
-    //     <Route path="*" element={<Navigate to="/" />} />
-    //   </Routes>
-    // </Router>
+        {/* Redirect any unknown routes to the root */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </Router>
   );
 }
 

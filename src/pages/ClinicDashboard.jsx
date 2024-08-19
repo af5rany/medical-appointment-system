@@ -7,6 +7,8 @@ import {
 } from "../API/clinicApi";
 import AppointmentDetailsModal from "../components/AppointmentDetailsModal";
 import AppointmentCard from "../components/AppointmentCard";
+import LogOut from "../components/LogOut"; // Import LogOut component
+import { useAuth } from "../contexts/AuthContext";
 
 function ClinicDashboard() {
   const [appointments, setAppointments] = useState([]);
@@ -14,11 +16,8 @@ function ClinicDashboard() {
   const [error, setError] = useState(null);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const { logout } = useAuth();
   const clinicId = "recJjA7419NJAa5j9";
-
-  // useEffect(() => {
-  //   console.log("fdsfsdfsfdfs", appointments);
-  // }, [appointments]);
 
   useEffect(() => {
     const loadApprovedAppointments = async () => {
@@ -88,11 +87,10 @@ function ClinicDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <header className="mb-8">
-        <h1 className="text-4xl font-bold text-center text-gray-800">
-          Clinic Dashboard
-        </h1>
+    <div className="min-h-screen bg-gray-50 p-8 relative">
+      <header className="mb-8 flex justify-between items-center">
+        <h1 className="text-4xl font-bold text-gray-800">Clinic Dashboard</h1>
+        <LogOut /> {/* Use LogOut component here */}
       </header>
 
       {error && (

@@ -1,5 +1,24 @@
 import db from "../airtableConfig";
 
+export const fetchClinicsFromAirtable = async () => {
+  try {
+    const records = await db
+      .table("Users")
+      .select({
+        filterByFormula: `FIND("Clinic", {Role})`,
+      })
+      .firstPage();
+
+    return records.map((record) => ({
+      id: record.id,
+      name: record.fields.Name,
+    }));
+  } catch (error) {
+    console.error("Error fetching clinics:", error);
+    return [];
+  }
+};
+
 export const fetchCompletedAppointments = async (patientId) => {
   try {
     const records = await db
@@ -10,6 +29,8 @@ export const fetchCompletedAppointments = async (patientId) => {
       .all();
     const appointments = await Promise.all(
       records.map(async (record) => {
+        console.log("patientcrecord", record);
+
         const { fields } = record;
         const patientId = fields.PatientId[0];
 
@@ -33,7 +54,7 @@ export const fetchRequestedAppointments = async (clinicId) => {
       .table("Appointments")
       .select({
         filterByFormula: `AND({ClinicId} = "${clinicId}", {Status} = "Requested")`,
-        expand: ["PatientId"],
+        // expand: ["PatientId"],
       })
       .all();
 
@@ -77,7 +98,7 @@ export const fetchApprovedAppointments = async (clinicId) => {
       .table("Appointments")
       .select({
         filterByFormula: `AND({ClinicId} = "${clinicId}", {Status} = "Approved")`,
-        expand: ["PatientId"],
+        // expand: ["PatientId"],
       })
       .all();
 
@@ -106,6 +127,7 @@ export const bookAppointment = async ({
   startTime,
   endTime,
 }) => {
+  console.log("reached rhehe");
   try {
     const startTimeFormatted = startTime.toISOString().substr(11, 5);
     const endTimeFormatted = endTime.toISOString().substr(11, 5);

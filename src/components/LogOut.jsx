@@ -1,20 +1,26 @@
 import React from "react";
+import { signOut } from "firebase/auth";
+import { useAuth } from "../contexts/AuthContext";
+import Cookies from "js-cookie";
+import { auth } from "../firebaseConfig";
 
 function LogOut() {
-  function handleLogout() {
-    signOut(auth)
-      .then(() => {
-        Cookies.remove("authToken");
-        setUser(null);
-      })
-      .catch((error) => {
-        console.error("Error signing out:", error);
-      });
+  const { setUser, setClinicId } = useAuth();
+
+  async function handleLogout() {
+    try {
+      await signOut(auth);
+      Cookies.remove("authToken"); // Remove the auth token cookie
+      setUser(null); // Clear user state
+      setClinicId(null);
+      console.log("Successfully signed out");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   }
 
   return (
     <div>
-      {" "}
       <button
         onClick={handleLogout}
         className="w-full bg-red-500 text-white py-2 rounded-lg font-medium hover:bg-red-600 transition duration-200"

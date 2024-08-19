@@ -16,7 +16,7 @@ export const fetchApprovedAppointments = async (clinicId) => {
       .table("Appointments")
       .select({
         filterByFormula: `AND({ClinicId} = "${clinicId}", {Status} = "Approved")`,
-        expand: ["PatientId"],
+        // expand: ["PatientId"],
       })
       .all();
 
@@ -47,13 +47,15 @@ export const fetchAppointmentRequests = async (clinicId) => {
       .table("Appointments")
       .select({
         filterByFormula: `AND({ClinicId} = '${clinicId}', {Status} = 'Requested')`,
-        expand: ["PatientId"],
+        // expand: ["PatientId"],
       })
       .all();
 
     const requestsWithPatientInfo = await Promise.all(
       records.map(async (record) => {
+        console.log("clinicrecord", record);
         const { fields } = record;
+
         const patientId = fields.PatientId?.[0];
 
         if (patientId) {
