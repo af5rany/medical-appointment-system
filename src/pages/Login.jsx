@@ -11,11 +11,11 @@ function Login() {
   const [role, setRole] = useState("patient");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (user) {
-      navigate(user.role === "clinic" ? "/clinic" : "/patient");
-    }
-  }, [user, navigate]);
+  // useEffect(() => {
+  //   if (user) {
+  //     navigate(user.role === "clinic" ? "/clinic" : "/patient");
+  //   }
+  // }, [user, navigate]);
 
   const handleRoleChange = (event) => {
     setRole(event.target.value);

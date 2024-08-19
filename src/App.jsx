@@ -40,11 +40,17 @@ function App() {
 
   return (
     <div>
-      {/* <ClinicDashboard /> */}
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      </Router>
+
+      <ClinicDashboard />
       <PatientDashboard />
     </div>
     // <Router>
-    //   <Routes>
+    // <Routes>
     //     {/* <Route path="/" element={<DefaultRoute />} /> */}
 
     //     <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
